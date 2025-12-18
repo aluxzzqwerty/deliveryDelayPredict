@@ -1,7 +1,10 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder
-
+from sklearn.pipeline import Pipeline
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.impute import SimpleImputer
+from xgboost import XGBClassifier
 
 def load_data(path: str) -> pd.DataFrame:
     df = pd.read_csv(path, encoding="latin1")
@@ -12,9 +15,6 @@ def preprocess_data(df: pd.DataFrame):
     target = "Late_delivery_risk"
 
     cols_to_drop = [
-    # target
-    'Late_delivery_risk',
-
     # leakage
     'Delivery Status',
     'Order Status',
@@ -36,6 +36,9 @@ def preprocess_data(df: pd.DataFrame):
     'Product Description', 'Product Image',
     'Product Name', 'Category Name', 'Department Name',
 
+    # constant
+    'Product Status'
+
     # geo
     'Latitude', 'Longitude'
 ]
@@ -46,14 +49,32 @@ def preprocess_data(df: pd.DataFrame):
     X = df.drop(columns=[target])
     y = df[target]
 
-    # Кодируем категориальные признаки
-    categorical_cols = X.select_dtypes(include=["object"]).columns
+    num_features = X.select_dtypes(include=["int64", "float64"]).columns.tolist()
+    cat_features = X.select_dtypes(include=["object"]).columns.tolist()
 
-    encoders = {}
-    for col in categorical_cols:
-        le = LabelEncoder()
-        X[col] = le.fit_transform(X[col].astype(str))
-        encoders[col] = le
+    num_transformer = Pipeline(steps=[
+        ("imputer", SimpleImputer(strategy="median")),
+        ("scaler", StandardScaler())
+    ])
+    cat_transformer = Pipeline(steps=[
+        ("imputer", SimpleImputer(strategy="most_frequent")),
+        ("encoder", OneHotEncoder(handle_unknown="ignore"))
+    ])
+
+    # preprocessor = ColumnTransformer(
+    #     transformers = [
+    #         ("num", num_transformer, num_features),
+    #         ("cat", cat_transformer, cat_features)
+    #     ]
+    # )
+
+    # xgb = XGBClassifier(
+    #     objective="binary:logistic",
+    #     eval_metric="logloss",
+    #     tree_method="hist",
+    #     random_state=42,
+    #     n_jobs=-1
+    # )
 
     # Делим на train / test
     X_train, X_test, y_train, y_test = train_test_split(
