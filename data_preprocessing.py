@@ -44,9 +44,6 @@ def clean_data(df: pd.DataFrame) -> pd.DataFrame:
 def split_features_target(
     df: pd.DataFrame
 ) -> Tuple[pd.DataFrame, pd.Series, List[str], List[str]]:
-    """
-    Returns X, y, numeric_features, categorical_features
-    """
     X = df.drop(columns=[TARGET])
     y = df[TARGET]
 

@@ -13,14 +13,19 @@ def build_preprocessor(num_features, cat_features):
 
     cat_transformer = Pipeline(steps=[
         ("imputer", SimpleImputer(strategy="most_frequent")),
-        ("encoder", OneHotEncoder(handle_unknown="ignore", sparse_output=False))
+        ("encoder", OneHotEncoder(
+            handle_unknown="ignore",
+            sparse_output=True,
+            max_categories=30
+        ))
     ])
 
     return ColumnTransformer(
         transformers=[
             ("num", num_transformer, num_features),
             ("cat", cat_transformer, cat_features)
-        ]
+        ],
+        sparse_threshold=1.0
     )
 
 

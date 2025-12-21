@@ -1,11 +1,11 @@
 import joblib
+import os
 from sklearn.model_selection import train_test_split
 
 from data_preprocessing import load_data, clean_data, split_features_target
 from model import build_preprocessor, build_pipeline
 
-# Load & clean
-df = load_data("DataCoSupplyChainDataset.csv")
+df = load_data("data/DataCoSupplyChainDataset.csv")
 df = clean_data(df)
 
 X, y, num_features, cat_features = split_features_target(df)
@@ -19,7 +19,8 @@ pipe = build_pipeline(preprocessor)
 
 pipe.fit(X_train, y_train)
 
-# Save model
+# save model
+os.makedirs("artifacts", exist_ok=True)
 joblib.dump(pipe, "artifacts/model.joblib")
 
 print("Model saved to artifacts/model.joblib")
